@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import { useEffect } from 'react';
+import { z } from 'zod';
 import {
   Dialog,
   DialogContent,
@@ -8,9 +9,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-// Import Task type and the insert schema (we'll use .partial() for updates)
-// --- CORRECTION: Import Project types, not Task ---
-import { Project, InsertProject, insertProjectSchema, User } from "@shared/schema";
+import { Project, InsertProject, User } from "@shared/schema";
+import { editProjectFormSchema, EditProjectFormValues } from '@/lib/validations';
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"; // Import mutation hooks
@@ -63,11 +63,7 @@ interface EditProjectDialogProps {
   // --- END ADDED ---
 }
 
-// --- CORRECTION: Use project schema ---
-// Use partial schema for updates, as not all fields might be sent
-const editProjectFormSchema = insertProjectSchema.partial();
-// Define the type based on the schema for form handling
-type EditProjectFormValues = z.infer<typeof editProjectFormSchema>;
+// EditProjectFormValues and editProjectFormSchema are imported from @/lib/validations
 
 
 // --- CORRECTION: Rename function to EditProjectDialog ---
@@ -207,12 +203,12 @@ export function EditProjectDialog({
             <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6 pt-4">
                  {/* Use the reusable ProjectFormFields component */}
                  <ProjectFormFields
-                    // Pass the form object, casting if necessary or ensuring types match
                     form={form as any}
                     projectManagers={projectManagers}
                     isLoadingManagers={isLoadingManagers}
                     disabled={updateProjectMutation.isPending}
-                    isEditMode={true} // Explicitly indicate edit mode
+                    isEditMode={true}
+                    projectId={projectToEdit.id}
                  />
 
                 {/* Form Buttons */}

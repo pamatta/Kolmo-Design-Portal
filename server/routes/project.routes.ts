@@ -4,6 +4,7 @@ import * as projectController from "@server/controllers/project.controller";
 import { isAuthenticated, isAdmin } from "@server/middleware/auth.middleware";
 import { validateIdParam } from "@server/middleware/validation.middleware";
 import { requireProjectPermission } from "@server/middleware/enhanced-permissions.middleware";
+import { upload } from "@server/middleware/upload.middleware";
 
 const router = Router();
 
@@ -24,6 +25,12 @@ router.delete("/:id", isAuthenticated, validateIdParam, requireProjectPermission
 
 // POST /api/projects/:id/recalculate-progress - Recalculate project progress (Project Manager access)
 router.post("/:id/recalculate-progress", isAuthenticated, validateIdParam, requireProjectPermission('canEditProject'), projectController.recalculateProjectProgress);
+
+// POST /api/projects/:id/image - Upload project image to R2
+router.post("/:id/image", isAuthenticated, validateIdParam, requireProjectPermission('canEditProject'), upload.single('image'), projectController.uploadProjectImage);
+
+// DELETE /api/projects/:id/image - Remove project image
+router.delete("/:id/image", isAuthenticated, validateIdParam, requireProjectPermission('canEditProject'), projectController.deleteProjectImage);
 
 // Note: Routes for associating clients, project managers, etc.,
 // could also be added here or in admin.routes.ts as appropriate.

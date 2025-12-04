@@ -11,6 +11,7 @@ import {
 } from '../../shared/schema';
 import { HttpError } from '../errors';
 import { expensifyService } from '../services/expensify.service';
+import { uploadToR2, deleteFromR2 } from '../r2-upload';
 
 // Define a Zod schema for project creation/update
 const projectInputSchema = insertProjectSchema.extend({
@@ -272,6 +273,124 @@ export const recalculateProjectProgress = async (
     });
     
   } catch(error) {
+    next(error);
+  }
+};
+
+// Upload project image to R2 storage
+export const uploadProjectImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const projectId = parseInt(req.params.id, 10);
+    
+    // Check if file was uploaded
+    if (!req.file) {
+      throw new HttpError(400, 'No image file provided.');
+    }
+
+    // Validate file type is an image
+    if (!req.file.mimetype.startsWith('image/')) {
+      throw new HttpError(400, 'File must be an image (JPEG, PNG, or GIF).');
+    }
+
+    // Get the current project to check if there's an existing image
+    const existingProject = await storage.projects.getProjectById(projectId);
+    if (!existingProject) {
+      throw new HttpError(404, 'Project not found.');
+    }
+
+    // If there's an existing image, delete it from R2
+    if (existingProject.imageUrl) {
+      try {
+        // Extract the key from the URL
+        // The URL format is /api/storage/proxy/<encoded-key>
+        const existingUrl = existingProject.imageUrl;
+        if (existingUrl.startsWith('/api/storage/proxy/')) {
+          const encodedKey = existingUrl.replace('/api/storage/proxy/', '');
+          const existingKey = decodeURIComponent(encodedKey);
+          await deleteFromR2(existingKey);
+          console.log(`Deleted old project image: ${existingKey}`);
+        }
+      } catch (deleteError) {
+        // Log but don't fail if we can't delete the old image
+        console.warn('Failed to delete old project image:', deleteError);
+      }
+    }
+
+    // Upload the new image to R2
+    const result = await uploadToR2({
+      fileName: req.file.originalname,
+      buffer: req.file.buffer,
+      mimetype: req.file.mimetype,
+      path: `projects/${projectId}/`,
+    });
+
+    // Update the project with the new image URL
+    const updatedProject = await storage.projects.updateProjectDetailsAndClients(projectId, { 
+      imageUrl: result.url 
+    });
+
+    if (!updatedProject) {
+      throw new HttpError(500, 'Failed to update project with image URL.');
+    }
+
+    res.status(200).json({ 
+      message: 'Project image uploaded successfully',
+      imageUrl: result.url,
+      key: result.key
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Delete project image from R2 storage
+export const deleteProjectImage = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    const projectId = parseInt(req.params.id, 10);
+
+    // Get the current project
+    const existingProject = await storage.projects.getProjectById(projectId);
+    if (!existingProject) {
+      throw new HttpError(404, 'Project not found.');
+    }
+
+    // Check if there's an image to delete
+    if (!existingProject.imageUrl) {
+      throw new HttpError(400, 'Project has no image to delete.');
+    }
+
+    // Extract the key from the URL and delete from R2
+    const existingUrl = existingProject.imageUrl;
+    if (existingUrl.startsWith('/api/storage/proxy/')) {
+      const encodedKey = existingUrl.replace('/api/storage/proxy/', '');
+      const existingKey = decodeURIComponent(encodedKey);
+      await deleteFromR2(existingKey);
+      console.log(`Deleted project image: ${existingKey}`);
+    }
+
+    // Update the project to remove the image URL
+    const updatedProject = await storage.projects.updateProjectDetailsAndClients(projectId, { 
+      imageUrl: null 
+    });
+
+    if (!updatedProject) {
+      throw new HttpError(500, 'Failed to update project.');
+    }
+
+    res.status(200).json({ 
+      message: 'Project image deleted successfully'
+    });
+
+  } catch (error) {
     next(error);
   }
 };

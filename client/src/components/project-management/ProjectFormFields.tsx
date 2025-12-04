@@ -1,9 +1,7 @@
-import React from 'react';
 import { UseFormReturn } from 'react-hook-form';
 import { format } from "date-fns";
-import { User } from "@shared/schema"; // Keep User import
-// Import the shared schema and type
-import { projectFormSchema, ProjectFormValues } from '@/lib/validations'; // Adjust path if needed
+import { User } from "@shared/schema";
+import { projectFormSchema, ProjectFormValues } from '@/lib/validations';
 
 import {
   FormControl,
@@ -29,15 +27,15 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { CalendarIcon, X } from "lucide-react";
 import { ClientMultiSelectCombobox } from "./ClientMultiSelectCombobox";
-
-// REMOVE the local definition of projectFormSchema and ProjectFormValues here
+import { ProjectImageUpload } from "./ProjectImageUpload";
 
 interface ProjectFormFieldsProps {
-  form: UseFormReturn<ProjectFormValues>; // Use imported type
+  form: UseFormReturn<ProjectFormValues>;
   projectManagers: User[];
   isLoadingManagers: boolean;
   disabled?: boolean;
   isEditMode?: boolean;
+  projectId?: number;
 }
 
 export function ProjectFormFields({
@@ -46,6 +44,7 @@ export function ProjectFormFields({
   isLoadingManagers,
   disabled = false,
   isEditMode = false,
+  projectId,
 }: ProjectFormFieldsProps) {
 
     // Function to safely format dates
@@ -457,23 +456,25 @@ export function ProjectFormFields({
         {/* --- End Client Assignment --- */}
 
 
-        {/* Image URL */}
+        {/* Project Image Upload */}
         <FormField
           control={form.control}
           name="imageUrl"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Image URL</FormLabel>
               <FormControl>
-                <Input
-                  placeholder="Enter image URL"
-                  {...field}
-                  value={field.value ?? ""} // Handle potential null/undefined
+                <ProjectImageUpload
+                  projectId={projectId}
+                  currentImageUrl={field.value}
+                  onImageChange={(imageUrl) => field.onChange(imageUrl ?? "")}
                   disabled={disabled}
                 />
               </FormControl>
               <FormDescription>
-                Optional: URL to project image.
+                {projectId 
+                  ? "Click to upload or change the project image. Images are stored securely."
+                  : "You can upload an image after creating the project."
+                }
               </FormDescription>
               <FormMessage />
             </FormItem>

@@ -21,45 +21,33 @@ export type User = z.infer<typeof userSchema>;
 
 
 // --- Base Project Form Schema ---
+// This schema matches the fields used in ProjectFormFields component
 export const projectFormSchema = z.object({
   name: z.string().min(3, "Project name must be at least 3 characters long."),
-  description: z.string().optional(),
-  startDate: z.string().refine((date) => !date || isValid(parseISO(date)), { // Allow empty string or valid date
-     message: "Invalid start date format.",
-  }).optional().nullable(), // Make explicitly optional and nullable
-  endDate: z.string().refine((date) => !date || isValid(parseISO(date)), { // Allow empty string or valid date
-     message: "Invalid end date format.",
-  }).optional().nullable(), // Make explicitly optional and nullable
+  description: z.string().optional().nullable(),
+  address: z.string().min(1, "Address is required."),
+  city: z.string().min(1, "City is required."),
+  state: z.string().min(1, "State is required."),
+  zipCode: z.string().min(1, "Zip code is required."),
   status: z.enum(['planning', 'in_progress', 'completed', 'on_hold', 'cancelled']),
-  projectManagerId: z.number().int().positive().optional().nullable(), // PM is optional
-  budget: z.string()
-     .regex(/^\d+(\.\d{1,2})?$/, "Budget must be a valid number (e.g., 1000 or 1000.50)")
-     .optional()
-     .nullable(),
-  clientIds: z.array(z.number().int().positive()).optional(), // Optional array of client IDs
-}).refine(data => {
-   // Handle optional/nullable dates in refinement
-  if (!data.startDate || !data.endDate) return true; // If either date isn't set, refinement passes
-  try {
-     return parseISO(data.endDate) >= parseISO(data.startDate);
-  } catch {
-     return false; // If dates are invalid, refine check fails
-  }
-}, {
-  message: "End date must be on or after the start date.",
-  path: ["endDate"],
+  totalBudget: z.string().min(1, "Budget is required."),
+  imageUrl: z.string().optional().nullable(),
+  progress: z.number().int().min(0).max(100).optional().nullable(),
+  projectManagerId: z.number().int().positive().optional().nullable(),
+  startDate: z.union([z.date(), z.string(), z.null()]).optional().nullable(),
+  estimatedCompletionDate: z.union([z.date(), z.string(), z.null()]).optional().nullable(),
+  actualCompletionDate: z.union([z.date(), z.string(), z.null()]).optional().nullable(),
+  clientIds: z.array(z.number().int().positive()).optional(),
 });
 
 export type ProjectFormValues = z.infer<typeof projectFormSchema>;
 
 // --- Create Project Schema ---
-// FIX: Removed the redundant .extend call
 export const createProjectFormSchema = projectFormSchema;
 
 export type CreateProjectFormValues = z.infer<typeof createProjectFormSchema>;
 
 // --- Edit Project Schema ---
-// FIX: Removed the redundant .extend call
 export const editProjectFormSchema = projectFormSchema;
 
 export type EditProjectFormValues = z.infer<typeof editProjectFormSchema>;
