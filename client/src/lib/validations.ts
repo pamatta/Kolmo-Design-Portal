@@ -30,7 +30,10 @@ export const projectFormSchema = z.object({
   state: z.string().min(1, "State is required."),
   zipCode: z.string().min(1, "Zip code is required."),
   status: z.enum(['planning', 'in_progress', 'completed', 'on_hold', 'cancelled']),
-  totalBudget: z.string().min(1, "Budget is required."),
+  totalBudget: z.string().min(1, "Budget is required.").refine((val) => {
+    const num = parseFloat(val.replace(/[^0-9.]/g, ''));
+    return !isNaN(num) && num > 0;
+  }, "Budget must be a valid positive number"),
   imageUrl: z.string().optional().nullable(),
   progress: z.number().int().min(0).max(100).optional().nullable(),
   projectManagerId: z.number().int().positive().optional().nullable(),

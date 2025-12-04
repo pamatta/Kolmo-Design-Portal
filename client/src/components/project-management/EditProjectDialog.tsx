@@ -124,7 +124,8 @@ export function EditProjectDialog({
         estimatedCompletionDate: projectToEdit.estimatedCompletionDate ? new Date(projectToEdit.estimatedCompletionDate) : undefined,
         actualCompletionDate: projectToEdit.actualCompletionDate ? new Date(projectToEdit.actualCompletionDate) : undefined,
         projectManagerId: projectToEdit.projectManagerId ?? null,
-        // clientIds: projectToEdit.clientIds ?? [], // Handle if editing client assignments here
+        // Extract client IDs from the project object if available (need to cast if type definition is strict)
+        clientIds: (projectToEdit as any).clients?.map((c: any) => c.id) ?? [],
       });
     } else if (!isOpen) {
         // Optionally reset to empty defaults when closing
@@ -148,9 +149,8 @@ export function EditProjectDialog({
           estimatedCompletionDate: projectData.estimatedCompletionDate ? new Date(projectData.estimatedCompletionDate).toISOString() : undefined,
           actualCompletionDate: projectData.actualCompletionDate ? new Date(projectData.actualCompletionDate).toISOString() : undefined,
           projectManagerId: projectData.projectManagerId ? Number(projectData.projectManagerId) : undefined,
+          clientIds: projectData.clientIds || [], // Ensure clientIds are sent
       };
-       // Remove clientIds if it's not meant to be updated here
-      delete (formattedValues as any).clientIds;
 
       return apiRequest('PUT', `/api/projects/${projectId}`, formattedValues); // Use projectId from props
     },

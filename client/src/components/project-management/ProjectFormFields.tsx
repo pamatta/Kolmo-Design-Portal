@@ -431,28 +431,26 @@ export function ProjectFormFields({
           )}
         />
 
-        {/* --- Client Assignment (Only in Create Mode for now) --- */}
-        {!isEditMode && (
-          <FormField
-            control={form.control}
-            name="clientIds"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel>Assign Clients <span className="text-destructive">*</span></FormLabel>
-                {/* Ensure ClientMultiSelectCombobox receives and sends number[] */}
-                <ClientMultiSelectCombobox
-                    selectedClientIds={Array.isArray(field.value) ? field.value : []}
-                    onClientIdsChange={field.onChange}
-                    disabled={disabled}
-                />
-                <FormDescription>
-                  Search and select at least one client to assign to this project.
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-        )}
+        {/* --- Client Assignment --- */}
+        <FormField
+          control={form.control}
+          name="clientIds"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel>Assign Clients <span className="text-destructive">*</span></FormLabel>
+              {/* Ensure ClientMultiSelectCombobox receives and sends number[] */}
+              <ClientMultiSelectCombobox
+                  selectedClientIds={Array.isArray(field.value) ? field.value : []}
+                  onClientIdsChange={field.onChange}
+                  disabled={disabled}
+              />
+              <FormDescription>
+                Search and select at least one client to assign to this project.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
         {/* --- End Client Assignment --- */}
 
 
