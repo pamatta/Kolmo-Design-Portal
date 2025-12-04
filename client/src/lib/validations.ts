@@ -37,7 +37,7 @@ export const projectFormSchema = z.object({
   startDate: z.union([z.date(), z.string(), z.null()]).optional().nullable(),
   estimatedCompletionDate: z.union([z.date(), z.string(), z.null()]).optional().nullable(),
   actualCompletionDate: z.union([z.date(), z.string(), z.null()]).optional().nullable(),
-  clientIds: z.array(z.number().int().positive()).optional(),
+  clientIds: z.array(z.number().int().positive()).min(1, "At least one client must be assigned."),
 });
 
 export type ProjectFormValues = z.infer<typeof projectFormSchema>;

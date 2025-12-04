@@ -438,7 +438,7 @@ export function ProjectFormFields({
             name="clientIds"
             render={({ field }) => (
               <FormItem className="flex flex-col">
-                <FormLabel>Assign Clients (Optional)</FormLabel>
+                <FormLabel>Assign Clients <span className="text-destructive">*</span></FormLabel>
                 {/* Ensure ClientMultiSelectCombobox receives and sends number[] */}
                 <ClientMultiSelectCombobox
                     selectedClientIds={Array.isArray(field.value) ? field.value : []}
@@ -446,7 +446,7 @@ export function ProjectFormFields({
                     disabled={disabled}
                 />
                 <FormDescription>
-                  Select clients to assign to this project.
+                  Search and select at least one client to assign to this project.
                 </FormDescription>
                 <FormMessage />
               </FormItem>
