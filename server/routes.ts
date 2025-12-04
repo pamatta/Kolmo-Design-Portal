@@ -118,12 +118,20 @@ export async function registerRoutes(app: Express): Promise<void> { // Changed r
       
       const searchQuery = (req.query.q as string || "").trim();
       
-      if (!searchQuery) {
-        return res.json([]);
-      }
-      
       const searchPattern = `%${searchQuery}%`;
       
+      const whereConditions = [eq(users.role, "client")];
+
+      if (searchQuery) {
+        whereConditions.push(
+            or(
+              ilike(users.firstName, searchPattern),
+              ilike(users.lastName, searchPattern),
+              ilike(users.email, searchPattern)
+            )
+        );
+      }
+
       const clients = await db
         .select({
           id: users.id,
@@ -133,16 +141,7 @@ export async function registerRoutes(app: Express): Promise<void> { // Changed r
           phone: users.phone,
         })
         .from(users)
-        .where(
-          and(
-            eq(users.role, "client"),
-            or(
-              ilike(users.firstName, searchPattern),
-              ilike(users.lastName, searchPattern),
-              ilike(users.email, searchPattern)
-            )
-          )
-        )
+        .where(and(...whereConditions)!)
         .limit(20);
       
       res.json(clients);
