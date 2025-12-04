@@ -52,16 +52,16 @@ export function ClientMultiSelectCombobox({
     queryKey: ["/api/admin/clients/search", debouncedSearchQuery],
     queryFn: async ({ queryKey }) => {
       const [, query] = queryKey;
-      if (!query) return []; // Don't search if query is empty
       try {
-         const res = await apiRequest("GET", `/api/admin/clients/search?q=${encodeURIComponent(query as string)}`);
+         const queryString = query ? `?q=${encodeURIComponent(query as string)}` : '';
+         const res = await apiRequest("GET", `/api/admin/clients/search${queryString}`);
          return await res.json();
       } catch (error) {
          console.error("Failed to search clients:", error);
          return []; // Return empty on error
       }
     },
-    enabled: open && !!debouncedSearchQuery, // Only fetch when open and query exists
+    enabled: open, // Fetch when open, regardless of query
     staleTime: 60 * 1000, // Cache for 1 minute
     refetchOnWindowFocus: false,
   });
@@ -139,4 +139,3 @@ export function ClientMultiSelectCombobox({
       </PopoverContent>
     </Popover>
   );
-}
