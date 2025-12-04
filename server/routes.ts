@@ -108,7 +108,49 @@ export async function registerRoutes(app: Express): Promise<void> { // Changed r
     }
   });
 
-
+  // Search clients for project assignment (Admin only)
+  app.get("/api/admin/clients/search", isAuthenticated, isAdmin, async (req: any, res: any) => {
+    try {
+      const { storage } = await import("./storage");
+      const { db } = await import("./db");
+      const { users } = await import("@shared/schema");
+      const { ilike, or, eq, and } = await import("drizzle-orm");
+      
+      const searchQuery = (req.query.q as string || "").trim();
+      
+      if (!searchQuery) {
+        return res.json([]);
+      }
+      
+      const searchPattern = `%${searchQuery}%`;
+      
+      const clients = await db
+        .select({
+          id: users.id,
+          firstName: users.firstName,
+          lastName: users.lastName,
+          email: users.email,
+          phone: users.phone,
+        })
+        .from(users)
+        .where(
+          and(
+            eq(users.role, "client"),
+            or(
+              ilike(users.firstName, searchPattern),
+              ilike(users.lastName, searchPattern),
+              ilike(users.email, searchPattern)
+            )
+          )
+        )
+        .limit(20);
+      
+      res.json(clients);
+    } catch (error) {
+      console.error("Error searching clients:", error);
+      res.status(500).json({ message: "Failed to search clients" });
+    }
+  });
 
   // --- Mount Project-Specific Routers ---
   // Apply common middleware like isAuthenticated and validateProjectId here
