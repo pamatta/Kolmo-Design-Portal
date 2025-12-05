@@ -52,7 +52,7 @@ import chatRouter from "./routes/chat.routes"; // Stream Chat router
 // =========================================================================
 // Main Route Registration Function
 // =========================================================================
-export async function registerRoutes(app: Express): Promise<void> { // Changed return type to void
+export async function registerRoutes(app: Express): Promise<Server> {
 
   // --- Core Auth Setup (Session, Passport Init) ---
   // This needs to run early to make req.user available
@@ -213,7 +213,7 @@ export async function registerRoutes(app: Express): Promise<void> { // Changed r
     "/api/projects/:projectId/daily-logs",
     isAuthenticated,
     validateProjectId,
-    dailyLogRouter // Assuming dailyLogRouter is imported
+    dailyLogRouter
   );
 
   // Punch List within a project
@@ -221,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<void> { // Changed r
     "/api/projects/:projectId/punch-list",
     isAuthenticated,
     validateProjectId,
-    punchListRouter // Assuming punchListRouter is imported
+    punchListRouter
   );
 
   // --- Mount other project-specific or admin routers ---
@@ -307,16 +307,7 @@ export async function registerRoutes(app: Express): Promise<void> { // Changed r
   // Mount Design Proposal routes (mixed auth - admin routes and public viewing)
   app.use("/api/design-proposals", designProposalRouter);
 
-  // --- REMOVED: Old inline route definitions and local router variables ---
-  // const taskRouter = Router(...) // REMOVED
-  // const dailyLogRouter = Router(...) // REMOVED
-  // const punchListRouter = Router(...) // REMOVED
-  // taskRouter.get(...) // REMOVED
-  // dailyLogRouter.get(...) // REMOVED
-  // punchListRouter.get(...) // REMOVED
-  // app.use("/api/projects/:projectId/tasks", ...) // REMOVED duplicate mount
-
-  // No need to return the server instance from here anymore
-  // const httpServer = createServer(app);
-  // return httpServer;
+  // Create and return the HTTP server
+  const httpServer = createServer(app);
+  return httpServer;
 }
