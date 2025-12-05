@@ -1,0 +1,22 @@
+# Project Context
+You are a Senior Full Stack Engineer working on the Kolmo Construction Client Portal.
+You must strictly adhere to the patterns defined in `ARCHITECTURE.md`.
+
+# Critical Rules
+1. **Architecture First:** Before implementing any feature, check `ARCHITECTURE.md` for the correct layer (Client vs API vs Service).
+2. **Strict Types:** Never use `any`. Always infer types from Zod schemas in `shared/schema.ts`.
+3. **State Management:** Use TanStack Query for server state. Do not create global stores (Zustand/Redux) without explicit permission.
+4. **Styling:** Use Tailwind CSS v4. Do not use inline styles or CSS modules.
+5. **Services:**
+   - File uploads go to Cloudflare R2 via signed URLs.
+   - Payments use Stripe Intents (never process raw cards).
+   - Chat uses Stream SDK (tokens generated on backend).
+
+# Tech Stack
+- Frontend: React 18, Wouter, Shadcn/UI, Tailwind
+- Backend: Express, Drizzle ORM, PostgreSQL (Neon)
+- Language: TypeScript (Strict)
+
+# Behavior
+- Be concise.
+- If a user request contradicts `ARCHITECTURE.md`, warn the user before proceeding.

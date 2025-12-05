@@ -50,18 +50,15 @@ function Router() {
   return (
     <UniversalLayout>
       <Switch>
-        <Route path="/auth">
-          {() => <AuthPageV2 />}
-        </Route>
-        <Route path="/auth-legacy">
-          {() => <AuthPage />}
-        </Route>
-        <Route path="/auth/magic-link/:token">
-          {() => <MagicLinkVerifyPage />}
-        </Route>
+        {/* Public authentication routes */}
+        <Route path="/auth" component={AuthPageV2} />
+        <Route path="/auth-legacy" component={AuthPage} />
+        <Route path="/auth/magic-link/:token" component={MagicLinkVerifyPage} />
         <Route path="/reset-password/:token">
-          {() => <AuthPage isPasswordReset={true} />}
+          {(params) => <AuthPage isPasswordReset={true} />}
         </Route>
+        
+        {/* Protected routes */}
         <ProtectedRoute path="/setup-profile" component={SetupProfile} />
         <ProtectedRoute path="/" component={Dashboard} adminOnly />
         <ProtectedRoute path="/client-portal" component={ClientPortalPage} />
@@ -92,26 +89,20 @@ function Router() {
         <ProtectedRoute path="/design-proposals" component={DesignProposalsPage} adminOnly />
         <ProtectedRoute path="/analytics" component={AnalyticsPage} adminOnly />
         
-        {/* Public design proposal route */}
+        {/* Public routes (no authentication required) */}
         <Route path="/design-proposal/:token" component={PublicDesignProposalPage} />
-        
-        {/* Public customer quote routes */}
         <Route path="/quote/:token" component={CustomerQuote} />
         <Route path="/customer/quote/:token" component={CustomerQuote} />
         <Route path="/quote-payment/:token" component={QuotePaymentPage} />
-        
-        {/* Public payment route */}
         <Route path="/payment/:clientSecret" component={PaymentPage} />
 
         {/* Development-only routes */}
         {import.meta.env.DEV && (
-          <Route path="/dev-tools">
-            {() => <DevTools />}
-          </Route>
+          <Route path="/dev-tools" component={DevTools} />
         )}
-        <Route>
-          {() => <NotFound />}
-        </Route>
+        
+        {/* 404 route */}
+        <Route component={NotFound} />
       </Switch>
     </UniversalLayout>
   );
